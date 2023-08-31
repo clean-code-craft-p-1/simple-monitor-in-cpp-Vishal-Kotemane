@@ -1,46 +1,70 @@
-#include <iostream>
-#include <assert.h>
-#include <unistd.h>
+#include "checker.h"
+
 using namespace std;
 
-int vitalsOk(float temperature, float pulseRate, float spo2) {
-  if(temperature > 102 || temperature < 95) {
-    cout << "Temperature critical!\n";
-    for (int i = 0; i < 6; i++)
-    {
-      cout << "\r* " << flush;
-      sleep(1);
-      cout << "\r *" << flush;
-      sleep(1);
+int VitalsMonitor::vitalsOk(float temperature, float pulseRate, float spo2) {
+    int status = VitalsMonitor::bodyTemperatureOk(temperature);
+    if (0 != status) {
+        status = VitalsMonitor::pulseRateOk(pulseRate);
+        if(0 != status) {
+            status = VitalsMonitor::oxygenSaturationOk(spo2);
+        }
     }
-
-    return 0;
-  } else if(pulseRate < 60 || pulseRate > 100) {
-    cout << "Pulse Rate is out of range!\n";
-    for (int i = 0; i < 6; i++)
-    {
-      cout << "\r* " << flush;
-      sleep(1);
-      cout << "\r *" << flush;
-      sleep(1);
-    }
-    return 0;
-  } else if(spo2 < 90) {
-    cout << "Oxygen Saturation out of range!\n";
-    for (int i = 0; i < 6; i++)
-    {
-      cout << "\r* " << flush;
-      sleep(1);
-      cout << "\r *" << flush;
-      sleep(1);
-    }
-    return 0;
-  }
-  return 1;
+    return status;
 }
 
-int main() {
-  assert(!vitalsOk(99, 102, 70));
-  assert(vitalsOk(98.1, 70, 98));
-  cout << "Done\n";
+int VitalsMonitor::bodyTemperatureOk(float temperature) {
+    int status = 1;
+    if(VitalsMonitor::isBodyTemperatureNotOk(temperature)) {
+      cout << "Temperature critical!\n";
+      for (int i = 0; i < 6; i++)
+      {
+        cout << "\r* " << flush;
+        sleep(1);
+        cout << "\r *" << flush;
+        sleep(1);
+      }
+      status = 0;
+    }
+    return status;
+}
+
+int VitalsMonitor::pulseRateOk(float pulseRate) {
+    int status = 1;
+    if(VitalsMonitor::isPulseRateNotOk(pulseRate)) {
+      cout << "Pulse Rate is out of range!\n";
+      for (int i = 0; i < 6; i++)
+      {
+        cout << "\r* " << flush;
+        sleep(1);
+        cout << "\r *" << flush;
+        sleep(1);
+      }
+      status = 0;
+    }
+    return status;
+}
+
+int VitalsMonitor::oxygenSaturationOk(float spo2) {
+    int status = 1;
+    if(spo2 < 90) {
+      cout << "Oxygen Saturation out of range!\n";
+      for (int i = 0; i < 6; i++)
+      {
+        cout << "\r* " << flush;
+        sleep(1);
+        cout << "\r *" << flush;
+        sleep(1);
+      }
+      status = 0;
+    }
+    return status;
+}
+
+bool VitalsMonitor::isBodyTemperatureNotOk(float temperature) {
+    return (temperature > 102 || temperature < 95);
+}
+
+bool VitalsMonitor::isPulseRateNotOk(float pulseRate) {
+    return (pulseRate < 60 || pulseRate > 100);
 }
